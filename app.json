@@ -15,6 +15,6 @@
       "webhookUrl": {
          "description": "discord webhook url for notification",
          "required": true
-      },
+      }
    }
 }

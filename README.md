@@ -5,7 +5,7 @@ Snipes nitro gift codes.
 
 To deploy to Heroku, you can click on the image below and login to your account.
 
-[![Deploy](https://www.herokucdn.com/deploy/button.svg)](https://heroku.com/deploy?template=https://github.com/zzzmario/nitro-sniper-alt/tree/master)
+[![Deploy](https://www.herokucdn.com/deploy/button.svg)](https://heroku.com/deploy?template=https://github.com/mohu22/discord-sniper/tree/master)
 
 **You can now go back to your app's page then visit *Resources*, make sure you disable the *web* dyno and enable the *worker* dyno. Your bot should now be up and running. Remember you can always check your bot's console if you access the *View Logs* in the *More* dropdown menu.**
 

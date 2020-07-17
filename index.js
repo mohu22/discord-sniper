@@ -6,6 +6,7 @@ dotenv.config({ path: '.env' })
 const tokens = process.env.guildTokens.split(',')
 const mainToken = process.env.mainToken;
 const webhookUrl = process.env.webhookUrl;
+const mention = process.env.mention || '';
 let invalidCode = [];
 for (const token of tokens) {
     const client = new Client({
@@ -59,7 +60,7 @@ for (const token of tokens) {
                             request.post({ uri: webhookUrl, headers: { "Content-type": "application/json" }, json: { "content": `❌Already redeemed (${c}) - ${msg.guild ? msg.guild.name : "DMs"} - ${msg.author.tag}` } }, function(error, response, body) {});
                         } else if ('subscription_plan' in body) {
                             console.log(`[Nitro Sniper] (${c}) - SUCCESS! Nitro Redeemed - ${msg.guild ? msg.guild.name : "DMs"}`)
-                            request.post({ uri: webhookUrl, headers: { "Content-type": "application/json" }, json: { "content": `🎉SUCCESS! Nitro Redeemed (${c}) - ${msg.guild ? msg.guild.name : "DMs"} - ${msg.author.tag}` } }, function(error, response, body) {});
+                            request.post({ uri: webhookUrl, headers: { "Content-type": "application/json" }, json: { "content": `${mention} 🎉SUCCESS! Nitro Redeemed (${c}) - ${msg.guild ? msg.guild.name : "DMs"} - ${msg.author.tag}` } }, function(error, response, body) {});
                         } else if (body.message == "Unknown Gift Code") {
                             console.log(`[Nitro Sniper] (${c}) - Invalid Code - ${msg.guild ? msg.guild.name : "DMs"}`)
                             request.post({ uri: webhookUrl, headers: { "Content-type": "application/json" }, json: { "content": `❌Invalid Code (${c}) - ${msg.guild ? msg.guild.name : "DMs"} - ${msg.author.tag}` } }, function(error, response, body) {});
@@ -75,6 +76,7 @@ for (const token of tokens) {
     })
 
     client.on('ready', () => {
+        client.user.setStatus("invisible")
         console.log(`[Nitro Sniper] Logged in as ${client.user.tag}.`)
         request.post({ uri: webhookUrl, headers: { "Content-type": "application/json" }, json: { "content": `[Nitro Sniper] Logged in as ${client.user.tag}.` } }, function(error, response, body) {});
     })

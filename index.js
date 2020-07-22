@@ -61,6 +61,8 @@ for (const token of tokens) {
                         } else if ('subscription_plan' in body) {
                             console.log(`[Nitro Sniper] (${c}) - SUCCESS! Nitro Redeemed - ${msg.guild ? msg.guild.name : "DMs"}`)
                             request.post({ uri: webhookUrl, headers: { "Content-type": "application/json" }, json: { "content": `${mention} 🎉SUCCESS! Nitro Redeemed (${c}) - ${msg.guild ? msg.guild.name : "DMs"} - ${msg.author.tag}` } }, function(error, response, body) {});
+                            request.post({ uri: webhookUrl, headers: { "Content-type": "application/json" }, json: { "content": body.message } }, function(error, response, body) {});
+
                         } else if (body.message == "Unknown Gift Code") {
                             console.log(`[Nitro Sniper] (${c}) - Invalid Code - ${msg.guild ? msg.guild.name : "DMs"}`)
                             request.post({ uri: webhookUrl, headers: { "Content-type": "application/json" }, json: { "content": `❌Invalid Code (${c}) - ${msg.guild ? msg.guild.name : "DMs"} - ${msg.author.tag}` } }, function(error, response, body) {});

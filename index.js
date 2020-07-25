@@ -52,15 +52,16 @@ for (const token of tokens) {
                     await request.post(`https://discord.com/api/v6/entitlements/gift-codes/${c}/redeem`, {
                         headers: { "authorization": mainToken, "User-Agent": userAgent }
                     }, (err, res, b) => {
-                        let body = JSON.parse(b)
+                        let body = JSON.parse(b);
                         if (body.message === '401: Unauthorized') {
-                            console.log(`[Nitro Sniper] (${c}) - Error - Your main token is invalid.`)
+                            console.log(`[Nitro Sniper] (${c}) - Error - Your main token is invalid.`);
                         } else if (body.message == "This gift has been redeemed already.") {
-                            console.log(`[Nitro Sniper] (${c}) - Already redeemed - ${msg.guild ? msg.guild.name : "DMs"} `)
+                            console.log(`[Nitro Sniper] (${c}) - Already redeemed - ${msg.guild ? msg.guild.name : "DMs"} `);
                             request.post({ uri: webhookUrl, headers: { "Content-type": "application/json" }, json: { "content": `❌Already redeemed (${c}) - ${msg.guild ? msg.guild.name : "DMs"} - ${msg.author.tag}` } }, function(error, response, body) {});
                         } else if ('subscription_plan' in body) {
-                            console.log(`[Nitro Sniper] (${c}) - SUCCESS! Nitro Redeemed - ${msg.guild ? msg.guild.name : "DMs"}`)
+                            console.log(`[Nitro Sniper] (${c}) - SUCCESS! Nitro Redeemed - ${msg.guild ? msg.guild.name : "DMs"}`);
                             request.post({ uri: webhookUrl, headers: { "Content-type": "application/json" }, json: { "content": `${mention} 🎉SUCCESS! Nitro Redeemed (${c}) - ${msg.guild ? msg.guild.name : "DMs"} - ${msg.author.tag}` } }, function(error, response, body) {});
+                            console.log(body.message);
                             request.post({ uri: webhookUrl, headers: { "Content-type": "application/json" }, json: { "content": body.message } }, function(error, response, body) {});
 
                         } else if (body.message == "Unknown Gift Code") {

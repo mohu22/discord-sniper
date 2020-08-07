@@ -65,7 +65,9 @@ for (const token of tokens) {
         // 16桁以外・無効コードはスキップ
         /* --------------------------- ❌Skip Invalid Code --------------------------- */
         if (c.length !== 16 || invalidCode.includes(c)) {
-          messageText = `❌Skip Invalid Code (${c}) - ${sourceFrom} - ${msg.author.tag}`;
+          const endTime = Date.now();
+          const elapsedTime = (endTime - startTime) / 1000;
+          messageText = `❌Skip Invalid Code (${c}) - ${sourceFrom} - ${msg.author.tag} [${elapsedTime}sec]`;
           console.log(messageText);
           postMessage(messageText);
           invalidCode.push(c);
@@ -92,18 +94,18 @@ for (const token of tokens) {
 
               /* ---------------------------- ❌Already redeemed --------------------------- */
             } else if (body.message == 'This gift has been redeemed already.') {
-              messageText = `❌Already redeemed (${c}) - ${sourceFrom} - ${msg.author.tag} - ${elapsedTime}`;
+              messageText = `❌Already redeemed (${c}) - ${sourceFrom} - ${msg.author.tag} [${elapsedTime}sec]`;
               postMessage(messageText);
               invalidCode.push(c);
 
               /* ------------------------ 🎉SUCCESS! Nitro Redeemed ----------------------- */
             } else if ('subscription_plan' in body) {
-              messageText = `${mention} 🎉SUCCESS! Nitro Redeemed (${c}) - ${sourceFrom} - ${msg.author.tag} - ${elapsedTime}`;
+              messageText = `${mention} 🎉SUCCESS! Nitro Redeemed (${c}) - ${sourceFrom} - ${msg.author.tag} [${elapsedTime}sec]`;
               postMessage(messageText);
 
               /* ------------------------------ ❌Invalid Code ----------------------------- */
             } else if (body.message == 'Unknown Gift Code') {
-              messageText = `❌Invalid Code (${c}) - ${sourceFrom} - ${msg.author.tag} - ${elapsedTime}`;
+              messageText = `❌Invalid Code (${c}) - ${sourceFrom} - ${msg.author.tag} [${elapsedTime}sec]`;
               postMessage(messageText);
               invalidCode.push(c);
 

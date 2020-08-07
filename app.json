@@ -17,7 +17,7 @@
             "required": true
         },
         "mention": {
-            "description": "claim成功時のメンション用ユーザーID\nex)\"<@000004386626000000>\" or \"@everyone\""
+            "description": "User ID for Mention on success of redeem\nex)\"<@000004386626000000>\" or \"@everyone\""
         }
     }
 }

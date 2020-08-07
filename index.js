@@ -1,14 +1,19 @@
-const userAgent =
-  'Mozilla/5.0 (Windows NT 10.0; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) discord/0.0.307 Chrome/78.0.3904.130 Electron/7.3.2 Safari/537.36';
 const { Client } = require('discord.js');
 const dotenv = require('dotenv');
 const request = require('request');
+
+// Load env
 dotenv.config({ path: '.env' });
 const tokens = process.env.guildTokens.split(',');
 const mainToken = process.env.mainToken;
 const webhookUrl = process.env.webhookUrl;
 const mention = process.env.mention || '';
+
+const userAgent =
+  'Mozilla/5.0 (Windows NT 10.0; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) discord/0.0.307 Chrome/78.0.3904.130 Electron/7.3.2 Safari/537.36';
+
 let invalidCode = [];
+
 for (const token of tokens) {
   const client = new Client({
     disabledEvents: [
@@ -45,142 +50,93 @@ for (const token of tokens) {
   });
 
   client.on('message', async (msg) => {
+    // nitroURL
     let code = msg.content.match(/discord\.gift\/[^\s]+/gim);
+
     if (code !== null && code.length >= 0) {
+      const startTime = Date.now();
       for (let i = 0; i < code.length; i++) {
+        // コード文字列取得
         let c = code[i].replace('discord.gift/', '');
-        if (!invalidCode.includes(c)) {
-          await request.post(
-            `https://discord.com/api/v6/entitlements/gift-codes/${c}/redeem`,
-            {
-              headers: { authorization: mainToken, 'User-Agent': userAgent },
-            },
-            (err, res, b) => {
-              let body = JSON.parse(b);
 
-              /* --------------------------- Unauthorized ERROR --------------------------- */
-              if (body.message === '401: Unauthorized') {
-                console.log(
-                  `[Nitro Sniper] (${c}) - Error - Your main token is invalid.`
-                );
+        // discordに投稿するメッセージ
+        let messageText;
 
-                /* ---------------------------- ❌Already redeemed --------------------------- */
-              } else if (
-                body.message == 'This gift has been redeemed already.'
-              ) {
-                console.log(
-                  `[Nitro Sniper] (${c}) - Already redeemed - ${
-                    msg.guild ? msg.guild.name : 'DMs'
-                  } `
-                );
-                request.post(
-                  {
-                    uri: webhookUrl,
-                    headers: { 'Content-type': 'application/json' },
-                    json: {
-                      content: `❌Already redeemed (${c}) - ${
-                        msg.guild ? msg.guild.name : 'DMs'
-                      } - ${msg.author.tag}`,
-                    },
-                  },
-                  function (error, response, body) {}
-                );
-
-                /* ------------------------ 🎉SUCCESS! Nitro Redeemed ----------------------- */
-              } else if ('subscription_plan' in body) {
-                console.log(
-                  `[Nitro Sniper] (${c}) - SUCCESS! Nitro Redeemed - ${
-                    msg.guild ? msg.guild.name : 'DMs'
-                  }`
-                );
-                request.post(
-                  {
-                    uri: webhookUrl,
-                    headers: { 'Content-type': 'application/json' },
-                    json: {
-                      content: `${mention} 🎉SUCCESS! Nitro Redeemed (${c}) - ${
-                        msg.guild ? msg.guild.name : 'DMs'
-                      } - ${msg.author.tag}`,
-                    },
-                  },
-                  function (error, response, body) {}
-                );
-                request.post(
-                  {
-                    uri: webhookUrl,
-                    headers: { 'Content-type': 'application/json' },
-                    json: { content: body },
-                  },
-                  function (error, response, body) {}
-                );
-
-                /* ------------------------------ ❌Invalid Code ----------------------------- */
-              } else if (body.message == 'Unknown Gift Code') {
-                console.log(
-                  `[Nitro Sniper] (${c}) - Invalid Code - ${
-                    msg.guild ? msg.guild.name : 'DMs'
-                  }`
-                );
-                request.post(
-                  {
-                    uri: webhookUrl,
-                    headers: { 'Content-type': 'application/json' },
-                    json: {
-                      content: `❌Invalid Code (${c}) - ${
-                        msg.guild ? msg.guild.name : 'DMs'
-                      } - ${msg.author.tag}`,
-                    },
-                  },
-                  function (error, response, body) {}
-                );
-                request.post(
-                  {
-                    uri: webhookUrl,
-                    headers: { 'Content-type': 'application/json' },
-                    json: { content: body },
-                  },
-                  function (error, response, body) {}
-                );
-              }
-              invalidCode.push(c);
-            }
-          );
-
-          /* --------------------------- ❌Skip Invalid Code --------------------------- */
-        } else {
-          console.log(`skip(${c})`);
-          request.post(
-            {
-              uri: webhookUrl,
-              headers: { 'Content-type': 'application/json' },
-              json: {
-                content: `❌Skip Invalid Code (${c}) - ${
-                  msg.guild ? msg.guild.name : 'DMs'
-                } - ${msg.author.tag}`,
-              },
-            },
-            function (error, response, body) {}
-          );
+        // 16桁以外・無効コードはスキップ
+        /* --------------------------- ❌Skip Invalid Code --------------------------- */
+        if (c.length !== 16 || invalidCode.includes(c)) {
+          messageText = `❌Skip Invalid Code (${c}) - ${sourceFrom} - ${msg.author.tag}`;
+          console.log(messageText);
+          postMessage(messageText);
+          invalidCode.push(c);
+          continue;
         }
-        /* -------------------------------------------------------------------------- */
+
+        /* --------------------------------- redeem --------------------------------- */
+        request.post(
+          `https://discord.com/api/v6/entitlements/gift-codes/${c}/redeem`,
+          {
+            headers: {
+              authorization: mainToken,
+              'User-Agent': userAgent,
+            },
+          },
+          (err, res, b) => {
+            let body = JSON.parse(b);
+            let sourceFrom = msg.guild ? msg.guild.name : 'DMs';
+            const endTime = Date.now();
+            const elapsedTime = (endTime - startTime) / 1000;
+            /* --------------------------- Unauthorized ERROR --------------------------- */
+            if (body.message === '401: Unauthorized') {
+              messageText = `[Nitro Sniper] (${c}) - Error - Your main token is invalid.`;
+
+              /* ---------------------------- ❌Already redeemed --------------------------- */
+            } else if (body.message == 'This gift has been redeemed already.') {
+              messageText = `❌Already redeemed (${c}) - ${sourceFrom} - ${msg.author.tag} - ${elapsedTime}`;
+              postMessage(messageText);
+              invalidCode.push(c);
+
+              /* ------------------------ 🎉SUCCESS! Nitro Redeemed ----------------------- */
+            } else if ('subscription_plan' in body) {
+              messageText = `${mention} 🎉SUCCESS! Nitro Redeemed (${c}) - ${sourceFrom} - ${msg.author.tag} - ${elapsedTime}`;
+              postMessage(messageText);
+
+              /* ------------------------------ ❌Invalid Code ----------------------------- */
+            } else if (body.message == 'Unknown Gift Code') {
+              messageText = `❌Invalid Code (${c}) - ${sourceFrom} - ${msg.author.tag} - ${elapsedTime}`;
+              postMessage(messageText);
+              invalidCode.push(c);
+
+              /* ---------------------------- Unknown Response ---------------------------- */
+            } else {
+              messageText = 'unknown response';
+              postMessage(messageText);
+            }
+            console.log(messageText);
+          }
+        );
       }
     }
   });
 
   client.on('ready', () => {
     client.user.setStatus('invisible');
-    console.log(`[Nitro Sniper] Logged in as ${client.user.tag}.`);
-    request.post(
-      {
-        uri: webhookUrl,
-        headers: { 'Content-type': 'application/json' },
-        json: { content: `[Nitro Sniper] Logged in as ${client.user.tag}.` },
-      },
-      function (error, response, body) {}
-    );
+    console.log(`Logged in as ${client.user.tag}.`);
+    postMessage(`Logged in as ${client.user.tag}.`);
   });
 
   setTimeout(() => {
     client.login(token);
   }, 1000);
+}
+
+async function postMessage(messageText) {
+  request.post(
+    {
+      uri: webhookUrl,
+      headers: { 'Content-type': 'application/json' },
+      json: { content: messageText },
+    },
+    (error, response, body) => {}
+  );
 }

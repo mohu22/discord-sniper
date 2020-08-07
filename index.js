@@ -62,6 +62,9 @@ for (const token of tokens) {
         // discordに投稿するメッセージ
         let messageText;
 
+        // コードが送られたサーバー or DM
+        let sourceFrom = msg.guild ? msg.guild.name : 'DMs';
+
         // 16桁以外・無効コードはスキップ
         /* --------------------------- ❌Skip Invalid Code --------------------------- */
         if (c.length !== 16 || invalidCode.includes(c)) {
@@ -85,9 +88,9 @@ for (const token of tokens) {
           },
           (err, res, b) => {
             let body = JSON.parse(b);
-            let sourceFrom = msg.guild ? msg.guild.name : 'DMs';
             const endTime = Date.now();
             const elapsedTime = (endTime - startTime) / 1000;
+
             /* --------------------------- Unauthorized ERROR --------------------------- */
             if (body.message === '401: Unauthorized') {
               messageText = `[Nitro Sniper] (${c}) - Error - Your main token is invalid.`;

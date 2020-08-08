@@ -57,7 +57,8 @@ for (const token of tokens) {
       const startTime = Date.now();
       for (let i = 0; i < code.length; i++) {
         // コード文字列取得
-        let c = code[i].replace('discord.gift/', '');
+        // let c = code[i].replace('discord.gift/', '');
+        let c = code[i].replace(/discord\.gift\//gi, '');
 
         // discordに投稿するメッセージ
         let messageText;
